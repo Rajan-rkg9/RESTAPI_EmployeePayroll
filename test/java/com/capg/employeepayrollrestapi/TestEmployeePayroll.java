@@ -29,6 +29,7 @@ public class TestEmployeePayroll {
 		EmployeePayrollData empData[] = new Gson().fromJson(response.asString(),EmployeePayrollData[].class);
 		return empData;
 	}
+	
     @Test
     public void givenEmployeeDatainJSONServer_WhenRetrieved_ShouldMatchCount()
     {
@@ -36,8 +37,13 @@ public class TestEmployeePayroll {
         EmployeePayrollRESTAPIService restApiObj;
         restApiObj=new EmployeePayrollRESTAPIService(Arrays.asList(empData));
         long count = restApiObj.countREST_IOEntries();
-        assertEquals(2,count);
+        assertEquals(4,count);
     }
+    
+    /**
+     * Retrieving Employee Data from 
+     * Json Server
+     */
     @Test
     public void addedNewEmployee_ShouldMatch_ResponseAndCount()
     {
