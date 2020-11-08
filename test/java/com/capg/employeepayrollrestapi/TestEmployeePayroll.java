@@ -6,6 +6,7 @@ import java.util.Arrays;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.google.gson.Gson;
@@ -29,7 +30,7 @@ public class TestEmployeePayroll {
 		EmployeePayrollData empData[] = new Gson().fromJson(response.asString(),EmployeePayrollData[].class);
 		return empData;
 	}
-	
+	@Ignore
     @Test
     public void givenEmployeeDatainJSONServer_WhenRetrieved_ShouldMatchCount()
     {
@@ -75,13 +76,13 @@ public class TestEmployeePayroll {
 							    			new EmployeePayrollData(5,"Gaurav",7365454),
 							    			new EmployeePayrollData(6,"Arun",7643988),
 							    			new EmployeePayrollData(7,"Shambhu",8654433)};
-    	for(EmployeePayrollData employeePayrollData:newEmpRecord)
+    	for(EmployeePayrollData emp:newEmpRecord)
     	{
-    		Response response=addEmployeeToJsonServer(employeePayrollData);
-    		int HTTPstatusCode=response.getStatusCode();
+    		Response response = addEmployeeToJsonServer(emp);
+    		int HTTPstatusCode = response.getStatusCode();
     		assertEquals(201,HTTPstatusCode);
-    		employeePayrollData=new Gson().fromJson(response.asString(),EmployeePayrollData.class);
-        	serviceObj.addEmployeeToPayrollUsingRestAPI(employeePayrollData);
+    		emp = new Gson().fromJson(response.asString(),EmployeePayrollData.class);
+        	serviceObj.addEmployeeToPayrollUsingRestAPI(emp);
     	}
     	long count = serviceObj.entryCount();
     	assertEquals(7,count);
@@ -91,15 +92,31 @@ public class TestEmployeePayroll {
     public void givenNewSalaryForAnyEmployee_WhenUpdated_ShouldMatch200Response()
     {
     	EmployeePayrollData empData[] = getEmployeeList();
-    	serviceObj=new EmployeePayrollService(Arrays.asList(empData));
+    	serviceObj = new EmployeePayrollService(Arrays.asList(empData));
     	serviceObj.updateSalaryUsingRestAPI("Shambhu",7765345.0);
-    	EmployeePayrollData empPayrollObj=serviceObj.getEmployeePayrollData("Abhinav");
-    	String empJson=new Gson().toJson(empPayrollObj);
-    	RequestSpecification request=RestAssured.given();
+    	EmployeePayrollData empPayrollObj =  serviceObj.getEmployeePayrollData("Shambhu");
+    	String empJson = new Gson().toJson(empPayrollObj);
+    	RequestSpecification request = RestAssured.given();
 		request.header("Content-Type","application/json");
 		request.body(empJson);
-		Response response=request.put("/employees/"+empPayrollObj.getId());
-		int statusCode=response.getStatusCode();
+		Response response = request.put("/employees/"+empPayrollObj.getId());
+		int statusCode = response.getStatusCode();
 		assertEquals(200, statusCode);
+    }
+    
+    @Test
+    public void employeeWhenDeleted_ShouldMatch200Response()
+    {
+    	EmployeePayrollData empData[] = getEmployeeList();
+    	serviceObj = new EmployeePayrollService(Arrays.asList(empData));
+    	EmployeePayrollData employeePayrollData = serviceObj.getEmployeePayrollData("Gaurav");
+    	RequestSpecification request = RestAssured.given();
+		request.header("Content-Type","application/json");
+		Response response = request.delete("/employees/"+employeePayrollData.getId());
+		int statusCode = response.getStatusCode();
+		assertEquals(200, statusCode);
+		serviceObj.deleteDetailsOfEmployeeUsingRestAPI(employeePayrollData.getName());
+		long count = serviceObj.entryCount();
+    	assertEquals(5,count);
     }
 }

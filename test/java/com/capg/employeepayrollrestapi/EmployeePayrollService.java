@@ -78,6 +78,38 @@ public class EmployeePayrollService {
 				throw new ServiceException ("errror");
 			EmployeePayrollJDBCService.getInstance().removeEmployee(name);
 		}
+		
+		public int countEntries() {
+			return employeePayrollList.size();
+		}
+		
+		public void deleteDetailsOfEmployeeUsingRestAPI(String name) {
+			EmployeePayrollData  empDataObj = this.getEmployeePayrollData(name);
+			employeePayrollList.remove(empDataObj);
+		}
+		
+		public void updateSalary(List<EmployeePayrollSalaryData> employeeNameAndSalaryList) {
+			Map<Integer, Boolean> addStatus = new HashMap<>();
+			employeeNameAndSalaryList.forEach(empObject ->
+			{
+				Runnable task = () -> {
+					addStatus.put(empObject.hashCode(), false);
+					try {
+						this.updateEmployeeSalary(empObject.name, empObject.salary);
+					} catch (Exception e) {
+					}
+					addStatus.put(empObject.hashCode(), true);
+				};
+				Thread thread = new Thread(task, empObject.name);
+				thread.start();
+			}
+					);
+			while(addStatus.containsValue(false)) {
+				try {
+					Thread.sleep(100);
+				} catch(InterruptedException e) {}
+			}
+		}
 		public void addEmployeesToPayrollWithThreads(List<EmployeePayrollData> employeePayrollDataList) {
 			Map<Integer,Boolean> addStatus = new HashMap<Integer,Boolean>();
 			employeePayrollDataList.forEach(empObject->
@@ -102,31 +134,10 @@ public class EmployeePayrollService {
 				catch(InterruptedException e) {}
 			}
 		}
-		public int countEntries() {
-			return employeePayrollList.size();
-		}
-		public void updateSalary(List<EmployeePayrollSalaryData> employeeNameAndSalaryList) {
-			Map<Integer, Boolean> addStatus = new HashMap<>();
-			employeeNameAndSalaryList.forEach(empObject ->
-			{
-				Runnable task = () -> {
-					addStatus.put(empObject.hashCode(), false);
-					try {
-						this.updateEmployeeSalary(empObject.name, empObject.salary);
-					} catch (Exception e) {
-					}
-					addStatus.put(empObject.hashCode(), true);
-				};
-				Thread thread = new Thread(task, empObject.name);
-				thread.start();
-			}
-					);
-			while(addStatus.containsValue(false)) {
-				try {
-					Thread.sleep(100);
-				} catch(InterruptedException e) {}
-			}
-		}
+		
+		/**
+		 *UC3
+		 */
 		public void updateSalaryUsingRestAPI(String name, double salary) {
 			EmployeePayrollData empDataObj = this.getEmployeePayrollData(name);
 			if(empDataObj!=null)
