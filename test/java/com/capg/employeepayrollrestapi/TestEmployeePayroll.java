@@ -64,8 +64,8 @@ public class TestEmployeePayroll {
     public void addedMultipleEmployees_ShouldMatch_ResponseAndCount()
     {
     	EmployeePayrollData empData[] = getEmployeeList();
-    	serviceObj=new EmployeePayrollService(Arrays.asList(empData));
-    	EmployeePayrollData[] newEmpRecord= {
+    	serviceObj = new EmployeePayrollService(Arrays.asList(empData));
+    	EmployeePayrollData newEmpRecord[]= {
 							    			new EmployeePayrollData(5,"Gaurav",7365454),
 							    			new EmployeePayrollData(6,"Arun",7643988),
 							    			new EmployeePayrollData(7,"Shambhu",8654433)};
@@ -79,5 +79,21 @@ public class TestEmployeePayroll {
     	}
     	long count = serviceObj.entryCount();
     	assertEquals(7,count);
+    }
+    
+    @Test
+    public void givenNewSalaryForAnyEmployee_WhenUpdated_ShouldMatch200Response()
+    {
+    	EmployeePayrollData empData[] = getEmployeeList();
+    	serviceObj=new EmployeePayrollService(Arrays.asList(empData));
+    	serviceObj.updateSalaryUsingRestAPI("Shambhu",7765345.0);
+    	EmployeePayrollData empPayrollObj=serviceObj.getEmployeePayrollData("Abhinav");
+    	String empJson=new Gson().toJson(empPayrollObj);
+    	RequestSpecification request=RestAssured.given();
+		request.header("Content-Type","application/json");
+		request.body(empJson);
+		Response response=request.put("/employees/"+empPayrollObj.getId());
+		int statusCode=response.getStatusCode();
+		assertEquals(200, statusCode);
     }
 }

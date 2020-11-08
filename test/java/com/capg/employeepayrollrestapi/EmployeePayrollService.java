@@ -127,4 +127,9 @@ public class EmployeePayrollService {
 				} catch(InterruptedException e) {}
 			}
 		}
+		public void updateSalaryUsingRestAPI(String name, double salary) {
+			EmployeePayrollData empDataObj = this.getEmployeePayrollData(name);
+			if(empDataObj!=null)
+				empDataObj.setSalary(salary);
+		}
 }
